@@ -13,7 +13,7 @@ ChronoResult = namedtuple("ChronoResult", [
 def chrono_sim(E_appl, t_total, dt, k01, k02, E02, alpha, lambda1, model="MH"):
     lambda2 = lambda1
     tau = dt
-    n_steps = int(t_total / dt)
+    n_steps = int(t_total / dt) + 1
 
     time = np.linspace(0, t_total, n_steps)
 
@@ -71,7 +71,7 @@ def chrono_sim(E_appl, t_total, dt, k01, k02, E02, alpha, lambda1, model="MH"):
         I_BV[i] = (fO_BV[i] * kBV1red[i] + fI_BV[i] * kBV2red[i]) / dt / FRT
 
     return ChronoResult(
-        time, I_MH, I_BV,
-        fO_MH, fR_MH, fI_MH,
-        fO_BV, fR_BV, fI_BV
+        time[1:], I_MH[1:], I_BV[1:],
+        fO_MH[1:], fR_MH[1:], fI_MH[1:],
+        fO_BV[1:], fR_BV[1:], fI_BV[1:]
     )
