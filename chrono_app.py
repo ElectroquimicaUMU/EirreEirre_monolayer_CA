@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from chrono_model import simulate_EirreEirre, simulate_EquasiEquasi
+from chrono_main import simulate_EirreEirre, simulate_EquasiEquasi
 
 st.set_page_config(layout="wide")
 st.title("📉 Chronoamperometry: EirreEirre vs EquasiEquasi")
