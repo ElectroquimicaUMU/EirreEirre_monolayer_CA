@@ -9,7 +9,7 @@ ChronoResult = namedtuple("ChronoResult", [
     "time", "time_star", "psi", "fO", "fR", "fI", "ln_psi", "linreg"
 ])
 
-def simulate_EirreEirre(E_appl, duration, dt, k01, k02, E02, alpha, lambda1):
+def simulate_EirreEirre(E_appl, duration, dt, k01, k02, E02, lambda1):
     lambda2 = lambda1
     n_steps = int(duration / dt)
     t = np.linspace(0, duration, n_steps)
