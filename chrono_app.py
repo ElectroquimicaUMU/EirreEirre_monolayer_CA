@@ -45,7 +45,18 @@ ax.legend()
 st.pyplot(fig)
 
 # Plot surface coverages
-st.subheader("Surface excesses (EirreEirre)")
+st.subheader("Surface excesses")
+fig, ax = plt.subplots()
+ax.plot(res1.time_star, res1.fO, label="fO (EirreEirre)")
+ax.plot(res1.time_star, res1.fR, label="fR (EirreEirre)")
+ax.plot(res1.time_star, res1.fI, label="fI (EirreEirre)")
+ax.plot(res2.time_star, res2.fO, "--", label="fO (EquasiEquasi)")
+ax.plot(res2.time_star, res2.fR, "--", label="fR (EquasiEquasi)")
+ax.plot(res2.time_star, res2.fI, "--", label="fI (EquasiEquasi)")
+ax.set_xlabel("θ = t / duration")
+ax.set_ylabel("Fractional coverage")
+ax.legend()
+st.pyplot(fig)
 fig, ax = plt.subplots()
 ax.plot(res1.time_star, res1.fO, label="fO")
 ax.plot(res1.time_star, res1.fR, label="fR")
@@ -102,4 +113,7 @@ def download_txt(label, filename, header, data):
     st.download_button(label, buf.getvalue(), file_name=filename, mime="text/plain")
 
 download_txt("Download EirreEirre Ψ", "EirreEirre_Psi.txt", "θ	Ψ", np.column_stack((res1.time_star, res1.psi)))
-download_txt("Download EquasiEquasi Ψ", "EquasiEquasi_Psi.txt", "θ	Ψ", np.column_stack((res2.time_star, res2.psi)))
+download_txt("Download EquasiEquasi Ψ", "EquasiEquasi_Psi.txt", "θ	Ψ", np.column_stack((res2.time_star, res2.psi)))st.subheader("📥 Download surface excesses")
+
+download_txt("Download EirreEirre surface excesses", "EirreEirre_excesses.txt", "θ\tfO\tfR\tfI", np.column_stack((res1.time_star, res1.fO, res1.fR, res1.fI)))
+download_txt("Download EquasiEquasi surface excesses", "EquasiEquasi_excesses.txt", "θ\tfO\tfR\tfI", np.column_stack((res2.time_star, res2.fO, res2.fR, res2.fI)))
