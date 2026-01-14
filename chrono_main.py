@@ -38,7 +38,7 @@ def simulate_EirreEirre(E_appl, duration, dt, k01, k02, E02, lambda1, lambda2):
 
     for i in range(1, n_steps):
         fO[i] = np.exp(-k1*t[i])
-        den = k1 - k2 if abs(k1 - k2) > 1e-15 else 1e-15
+        den = k2 - k1 if abs(k1 - k2) > 1e-15 else 1e-15
         fI[i] = k1 / den * (np.exp(-k1*t[i]) - np.exp(-k2*t[i]))
         fR[i] = 1 - fO[i] - fI[i]
         psi[i] = k1 * fO[i] + k2 * fI[i]
