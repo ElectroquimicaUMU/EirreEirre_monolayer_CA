@@ -113,7 +113,9 @@ def download_txt(label, filename, header, data):
     st.download_button(label, buf.getvalue(), file_name=filename, mime="text/plain")
 
 download_txt("Download EirreEirre Ψ", "EirreEirre_Psi.txt", "θ	Ψ", np.column_stack((res1.time_star, res1.psi)))
-download_txt("Download EquasiEquasi Ψ", "EquasiEquasi_Psi.txt", "θ	Ψ", np.column_stack((res2.time_star, res2.psi)))st.subheader("📥 Download surface excesses")
+download_txt("Download EquasiEquasi Ψ", "EquasiEquasi_Psi.txt", "θ	Ψ", np.column_stack((res2.time_star, res2.psi)))
+
+st.subheader("📥 Download surface excesses")
 
 download_txt("Download EirreEirre surface excesses", "EirreEirre_excesses.txt", "θ\tfO\tfR\tfI", np.column_stack((res1.time_star, res1.fO, res1.fR, res1.fI)))
 download_txt("Download EquasiEquasi surface excesses", "EquasiEquasi_excesses.txt", "θ\tfO\tfR\tfI", np.column_stack((res2.time_star, res2.fO, res2.fR, res2.fI)))
