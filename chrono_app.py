@@ -2,7 +2,7 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-from chrono_main_with_regression import chrono_sim_with_regression
+from chrono_main import chrono_sim_with_regression
 
 st.set_page_config(layout="wide", page_title="Monolayer Chronoamperometry")
 
