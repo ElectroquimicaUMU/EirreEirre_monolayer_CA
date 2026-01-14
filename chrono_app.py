@@ -1,83 +1,121 @@
-
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-from chrono_main import chrono_sim_with_regression
+import pandas as pd
+from chrono_main import simulate_EirreEirre, simulate_EquasiEquasi
 
-st.set_page_config(layout="wide", page_title="Monolayer Chronoamperometry")
+st.set_page_config(layout="wide")
+st.title("📉 Chronoamperometry: EirreEirre vs EquasiEquasi")
 
-st.title("⏱️ Chronoamperometry Simulation — Monolayer System")
+# Sidebar inputs
+with st.sidebar:
+    E_appl = st.number_input("Applied potential (V)", value=-0.3, step=0.001, format="%.3f")
+    duration = st.number_input("Duration (s)", value=2.0, step=0.1)
+    dt = st.number_input("Time step (s)", value=0.01, step=0.001, format="%.3f")
+    lambda1 = st.number_input("λ (eV)", value=0.5, step=0.01)
+    k01 = st.number_input("k01 (s⁻¹)", value=0.1, step=0.01)
+    k02 = st.number_input("k02 (s⁻¹)", value=0.1, step=0.01)
+    E02 = st.number_input("E02 (V)", value=-0.2, step=0.001, format="%.3f")
+    st.markdown("### Linear regression range (θ)")
+    theta_min = st.slider("θ min", 0.0, 1.0, 0.0, step=0.01)
+    theta_max = st.slider("θ max", 0.0, 1.0, 1.0, step=0.01)
 
-# ---- Input parameters ----
-st.sidebar.header("🔧 Simulation Parameters")
+# Run simulations
+res1 = simulate_EirreEirre(E_appl, duration, dt, k01, k02, E02, lambda1 * 38.923074)
+res2 = simulate_EquasiEquasi(E_appl, duration, dt, k01, k02, E02, lambda1 * 38.923074)
 
-E_appl = st.sidebar.number_input("Applied Potential (V)", value=-0.3, format="%.3f")
-duration = st.sidebar.number_input("Total Time (s)", value=10.0)
-dt = st.sidebar.number_input("Time Step (s)", value=0.01)
-k01 = st.sidebar.number_input("k₀₁ (s⁻¹)", value=0.1, format="%.3e")
-k02 = st.sidebar.number_input("k₀₂ (s⁻¹)", value=0.1, format="%.3e")
-E02 = st.sidebar.number_input("E₀₂ (V)", value=-0.25, format="%.3f")
-lambda1 = st.sidebar.number_input("λ (Marcus parameter, eV)", value=0.5)
-alpha = st.sidebar.slider("α (BV only)", min_value=0.0, max_value=1.0, value=0.5)
+# Apply regression in selected theta range
+def custom_regression(t_star, ln_psi, theta_min, theta_max):
+    mask = (t_star >= theta_min) & (t_star <= theta_max) & (~np.isnan(ln_psi))
+    from scipy.stats import linregress
+    slope, intercept, r, _, _ = linregress(t_star[mask], ln_psi[mask])
+    return dict(slope=slope, intercept=intercept, r=r)
 
-st.sidebar.markdown("---")
+res1_reg = custom_regression(res1.time_star, res1.ln_psi, theta_min, theta_max)
+res2_reg = custom_regression(res2.time_star, res2.ln_psi, theta_min, theta_max)
 
-theta_fit_min = st.sidebar.slider("θ min (regression)", 0.0, 1.0, 0.1)
-theta_fit_max = st.sidebar.slider("θ max (regression)", 0.0, 1.0, 1.0)
+# Plot adimensional current Psi
+st.subheader("Ψ(θ) - Adimensional current response")
+fig, ax = plt.subplots()
+ax.plot(res1.time_star, res1.psi, label="EirreEirre")
+ax.plot(res2.time_star, res2.psi, "--", label="EquasiEquasi")
+ax.set_xlabel("θ = t / duration")
+ax.set_ylabel("Ψ")
+ax.legend()
+st.pyplot(fig)
 
-# ---- Run simulation ----
-res = chrono_sim_with_regression(
-    E_appl, duration, dt, k01, k02, E02, alpha,
-    lambda1 * 38.923074, theta_fit_min=theta_fit_min, theta_fit_max=theta_fit_max
-)
+# Plot surface coverages
+st.subheader("Surface excesses")
+fig, ax = plt.subplots()
+ax.plot(res1.time_star, res1.fO, label="fO (EirreEirre)")
+ax.plot(res1.time_star, res1.fR, label="fR (EirreEirre)")
+ax.plot(res1.time_star, res1.fI, label="fI (EirreEirre)")
+ax.plot(res2.time_star, res2.fO, "--", label="fO (EquasiEquasi)")
+ax.plot(res2.time_star, res2.fR, "--", label="fR (EquasiEquasi)")
+ax.plot(res2.time_star, res2.fI, "--", label="fI (EquasiEquasi)")
+ax.set_xlabel("θ = t / duration")
+ax.set_ylabel("Fractional coverage")
+ax.legend()
+st.pyplot(fig)
+fig, ax = plt.subplots()
+ax.plot(res1.time_star, res1.fO, label="fO")
+ax.plot(res1.time_star, res1.fR, label="fR")
+ax.plot(res1.time_star, res1.fI, label="fI")
+ax.set_xlabel("θ = t / duration")
+ax.set_ylabel("Fractional coverage")
+ax.legend()
+st.pyplot(fig)
 
-st.subheader("📈 Current Response (Ψ vs θ)")
+# Regression analysis of ln|Ψ|
+st.subheader("Regression: ln|Ψ| vs θ")
+fig, ax = plt.subplots()
+mask1 = ~np.isnan(res1.ln_psi)
+mask2 = ~np.isnan(res2.ln_psi)
+ax.plot(res1.time_star[mask1], res1.ln_psi[mask1], label="EirreEirre")
+ax.plot(res2.time_star[mask2], res2.ln_psi[mask2], "--", label="EquasiEquasi")
 
-fig1, ax1 = plt.subplots()
-ax1.plot(res.theta, res.I_MH * dt * 38.923074, label="MH")
-ax1.plot(res.theta, res.I_BV * dt * 38.923074, "--", label="BV")
-ax1.set_xlabel("θ")
-ax1.set_ylabel("Ψ")
-ax1.legend()
-st.pyplot(fig1)
+# Draw regression lines in selected range
+line1 = res1_reg["slope"] * res1.time_star + res1_reg["intercept"]
+line2 = res2_reg["slope"] * res2.time_star + res2_reg["intercept"]
+ax.plot(res1.time_star, line1, "k:", alpha=0.3)
+ax.plot(res2.time_star, line2, "k--", alpha=0.3)
 
-st.subheader("📉 ln|Ψ| vs θ with Regression")
+ax.set_xlabel("θ = t / duration")
+ax.set_ylabel("ln(Ψ)")
+ax.legend()
+st.pyplot(fig)
 
-fig2, ax2 = plt.subplots()
-ax2.plot(res.theta, res.ln_psi_MH, label="MH")
-ax2.plot(res.theta, res.ln_psi_BV, "--", label="BV")
-ax2.plot(res.theta, res.reg_MH.intercept + res.reg_MH.slope * res.theta, "k:", label=f"MH fit: slope={res.reg_MH.slope:.3f}")
-ax2.plot(res.theta, res.reg_BV.intercept + res.reg_BV.slope * res.theta, "r:", label=f"BV fit: slope={res.reg_BV.slope:.3f}")
-ax2.set_xlabel("θ")
-ax2.set_ylabel("ln|Ψ|")
-ax2.legend()
-st.pyplot(fig2)
+# Regression results table
+st.markdown("### Regression summary")
+df = pd.DataFrame([
+    {
+        "Model": "EirreEirre",
+        "Slope": res1_reg["slope"],
+        "Intercept": res1_reg["intercept"],
+        "R": res1_reg["r"]
+    },
+    {
+        "Model": "EquasiEquasi",
+        "Slope": res2_reg["slope"],
+        "Intercept": res2_reg["intercept"],
+        "R": res2_reg["r"]
+    }
+])
+st.dataframe(df)
 
-st.subheader("📊 Surface Excesses fO, fI, fR (MH and BV)")
+# Downloads
+st.subheader("📥 Download Ψ vs θ data")
 
-fig3, ax3 = plt.subplots()
-ax3.plot(res.theta, res.fO_MH, label="fO (MH)")
-ax3.plot(res.theta, res.fI_MH, label="fI (MH)")
-ax3.plot(res.theta, res.fR_MH, label="fR (MH)")
-ax3.plot(res.theta, res.fO_BV, "--", label="fO (BV)")
-ax3.plot(res.theta, res.fI_BV, "--", label="fI (BV)")
-ax3.plot(res.theta, res.fR_BV, "--", label="fR (BV)")
-ax3.set_xlabel("θ")
-ax3.set_ylabel("Surface Excess")
-ax3.legend()
-st.pyplot(fig3)
-
-# ---- Download section ----
 def download_txt(label, filename, header, data):
-    from io import StringIO
-    buffer = StringIO()
-    np.savetxt(buffer, data, header=header, delimiter="\t")
-    st.download_button(label, data=buffer.getvalue(), file_name=filename, mime="text/plain")
+    import io
+    buf = io.StringIO()
+    np.savetxt(buf, data, header=header)
+    st.download_button(label, buf.getvalue(), file_name=filename, mime="text/plain")
 
-st.subheader("📥 Download Results as TXT")
+download_txt("Download EirreEirre Ψ", "EirreEirre_Psi.txt", "θ	Ψ", np.column_stack((res1.time_star, res1.psi)))
+download_txt("Download EquasiEquasi Ψ", "EquasiEquasi_Psi.txt", "θ	Ψ", np.column_stack((res2.time_star, res2.psi)))
 
-download_txt("Download Ψ (MH)", "psi_mh.txt", "theta\tPsi", np.column_stack((res.theta, res.I_MH * dt * 38.923074)))
-download_txt("Download Ψ (BV)", "psi_bv.txt", "theta\tPsi", np.column_stack((res.theta, res.I_BV * dt * 38.923074)))
+st.subheader("📥 Download surface excesses")
 
-download_txt("Download Excesses (MH)", "excess_mh.txt", "theta\tfO\tfI\tfR", np.column_stack((res.theta, res.fO_MH, res.fI_MH, res.fR_MH)))
-download_txt("Download Excesses (BV)", "excess_bv.txt", "theta\tfO\tfI\tfR", np.column_stack((res.theta, res.fO_BV, res.fI_BV, res.fR_BV)))
+download_txt("Download EirreEirre surface excesses", "EirreEirre_excesses.txt", "θ\tfO\tfR\tfI", np.column_stack((res1.time_star, res1.fO, res1.fR, res1.fI)))
+download_txt("Download EquasiEquasi surface excesses", "EquasiEquasi_excesses.txt", "θ\tfO\tfR\tfI", np.column_stack((res2.time_star, res2.fO, res2.fR, res2.fI)))
