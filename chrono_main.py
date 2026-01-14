@@ -49,6 +49,7 @@ def simulate_EirreEirre(E_appl, duration, dt, k01, k02, E02, lambda1):
     res.fI = fI
     res.fR = fR
     res.psi = psi
+    res.ln_psi = np.log(np.abs(psi))
     return res
 
     n_steps = int(duration / dt)
