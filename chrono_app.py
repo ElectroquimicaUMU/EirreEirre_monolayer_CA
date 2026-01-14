@@ -21,7 +21,7 @@ with st.sidebar:
     theta_max = st.slider("θ max", 0.0, 1.0, 1.0, step=0.01)
 
 # Run simulations
-res1 = simulate_EirreEirre(E_appl, duration, dt, k01, k02, E02, lambda1 * 38.923074)
+res1 = simulate_EirreEirre(E_appl, duration, dt, k01, k02, E02, lambda1 * 38.923074, lambda2 * 38.923074)
 res2 = simulate_EquasiEquasi(E_appl, duration, dt, k01, k02, E02, lambda1 * 38.923074)
 
 # Apply regression in selected theta range

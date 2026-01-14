@@ -9,8 +9,7 @@ ChronoResult = namedtuple("ChronoResult", [
     "time", "time_star", "psi", "fO", "fR", "fI", "ln_psi", "linreg"
 ])
 
-def simulate_EirreEirre(E_appl, duration, dt, k01, k02, E02, lambda1):
-    lambda2 = lambda1
+def simulate_EirreEirre(E_appl, duration, dt, k01, k02, E02, lambda1, lambda2):
     n_steps = int(duration / dt)
     t = np.linspace(0, duration, n_steps)
     t_star = t / duration
@@ -24,8 +23,8 @@ def simulate_EirreEirre(E_appl, duration, dt, k01, k02, E02, lambda1):
     MH1 = quad(lambda x: np.exp(-lambda1/4*(1 + (nu1 + x)/lambda1)**2)/(1 + np.exp(-x)), -50, 50)[0]
     MH2 = quad(lambda x: np.exp(-lambda2/4*(1 + (nu2 + x)/lambda2)**2)/(1 + np.exp(-x)), -50, 50)[0]
 
-    k1 = k01 * MH1 / S01
-    k2 = k02 * MH2 / S02
+    k1 = k01 * duration * MH1 / S01
+    k2 = k02 * duration * MH2 / S02
 
     fO = np.zeros(n_steps)
     fR = np.zeros(n_steps)
@@ -38,10 +37,10 @@ def simulate_EirreEirre(E_appl, duration, dt, k01, k02, E02, lambda1):
     psi[0] = k1 * fO[0] + k2 * fI[0]
 
     for i in range(1, n_steps):
-        fO[i] = fO[i-1] * np.exp(-k1*dt)
+        fO[i] = np.exp(-k1*t[i])
         den = k1 - k2 if abs(k1 - k2) > 1e-15 else 1e-15
-        fR[i] = 1 + (fR[i-1] - 1) * np.exp(-k2*dt) + fO[i-1] * (np.exp(-k1*dt) - np.exp(-k2*dt)) * k2 / den
-        fI[i] = 1 - fO[i] - fR[i]
+        fI[i] = k1 / den * (np.exp(-k1*t[i]) - np.exp(-k2*t[i]))
+        fR[i] = 1 - fO[i] - fI[i]
         psi[i] = k1 * fO[i] + k2 * fI[i]
 
     ln_psi = np.where(psi > 0, np.log(psi), np.nan)
