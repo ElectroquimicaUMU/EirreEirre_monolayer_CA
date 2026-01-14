@@ -72,9 +72,10 @@ def simulate_EquasiEquasi(E_appl, duration, dt, k01, k02, E02, lambda1):
     k4 = k3 * np.exp(nu2)
 
     def ODEivp(t, x):
+        fO, fI = x
         return np.array([
-            -(k1 + k2) * x[0] - k2 * x[1] + k2,
-            -(k3 + k4) * x[1] - k3 * x[0] + k3
+            -k1 * fO + k2 * fI,
+            (k1 - k4) * fO - (k2 + k3 + k4) * fI + k4
         ])
 
     sol = solve_ivp(ODEivp, [0, duration], [1, 0], t_eval=t)
