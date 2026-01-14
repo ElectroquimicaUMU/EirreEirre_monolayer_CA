@@ -10,7 +10,47 @@ ChronoResult = namedtuple("ChronoResult", [
 ])
 
 def simulate_EirreEirre(E_appl, duration, dt, k01, k02, E02, lambda1):
-    lambda2 = lambda1
+    import numpy as np
+
+    FRT = 38.923074
+    n_steps = int(duration / dt)
+    time = np.linspace(0, duration, n_steps)
+    theta = time / duration
+
+    # Calculamos el potencial reducido
+    nu1 = FRT * (E_appl - 0)
+    nu2 = FRT * (E_appl - E02)
+
+    # Constantes de tasa
+    k1 = k01 * np.exp(-lambda1 / 4 * (1 + nu1 / lambda1)**2)
+    k2 = k02 * np.exp(-lambda1 / 4 * (1 + nu2 / lambda1)**2)
+
+    # fO(t)
+    fO = np.exp(-k1 * theta)
+
+    # fI(t)
+    den = k2 - k1 if abs(k2 - k1) > 1e-15 else 1e-15
+    fI = (k1 / den) * (np.exp(-k1 * theta) - np.exp(-k2 * theta))
+
+    # fR(t)
+    fR = 1 - fO - fI
+
+    # Psi
+    psi = fO * k1 + fI * k2
+
+    # Resultados como objeto simple
+    class Result:
+        pass
+
+    res = Result()
+    res.time = time
+    res.time_star = theta
+    res.fO = fO
+    res.fI = fI
+    res.fR = fR
+    res.psi = psi
+    return res
+
     n_steps = int(duration / dt)
     t = np.linspace(0, duration, n_steps)
     t_star = t / duration
