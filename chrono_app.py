@@ -16,18 +16,30 @@ with st.sidebar:
     k01 = st.number_input("k01 (s⁻¹)", value=0.1, step=0.01)
     k02 = st.number_input("k02 (s⁻¹)", value=0.1, step=0.01)
     E02 = st.number_input("E02 (V)", value=-0.2, step=0.001, format="%.3f")
-    alpha = st.number_input("α", value=0.5, step=0.01)
+    st.markdown("### Linear regression range (θ)")
+    theta_min = st.slider("θ min", 0.0, 1.0, 0.0, step=0.01)
+    theta_max = st.slider("θ max", 0.0, 1.0, 1.0, step=0.01)
 
 # Run simulations
-res1 = simulate_EirreEirre(E_appl, duration, dt, k01, k02, E02, alpha, lambda1 * 38.923074)
+res1 = simulate_EirreEirre(E_appl, duration, dt, k01, k02, E02, lambda1 * 38.923074)
 res2 = simulate_EquasiEquasi(E_appl, duration, dt, k01, k02, E02, lambda1 * 38.923074)
 
+# Apply regression in selected theta range
+def custom_regression(t_star, ln_psi, theta_min, theta_max):
+    mask = (t_star >= theta_min) & (t_star <= theta_max) & (~np.isnan(ln_psi))
+    from scipy.stats import linregress
+    slope, intercept, r, _, _ = linregress(t_star[mask], ln_psi[mask])
+    return dict(slope=slope, intercept=intercept, r=r)
+
+res1_reg = custom_regression(res1.time_star, res1.ln_psi, theta_min, theta_max)
+res2_reg = custom_regression(res2.time_star, res2.ln_psi, theta_min, theta_max)
+
 # Plot adimensional current Psi
-st.subheader("Ψ(t*) - Adimensional current response")
+st.subheader("Ψ(θ) - Adimensional current response")
 fig, ax = plt.subplots()
 ax.plot(res1.time_star, res1.psi, label="EirreEirre")
 ax.plot(res2.time_star, res2.psi, "--", label="EquasiEquasi")
-ax.set_xlabel("t / duration")
+ax.set_xlabel("θ = t / duration")
 ax.set_ylabel("Ψ")
 ax.legend()
 st.pyplot(fig)
@@ -38,26 +50,26 @@ fig, ax = plt.subplots()
 ax.plot(res1.time_star, res1.fO, label="fO")
 ax.plot(res1.time_star, res1.fR, label="fR")
 ax.plot(res1.time_star, res1.fI, label="fI")
-ax.set_xlabel("t / duration")
+ax.set_xlabel("θ = t / duration")
 ax.set_ylabel("Fractional coverage")
 ax.legend()
 st.pyplot(fig)
 
 # Regression analysis of ln|Ψ|
-st.subheader("Regression: ln|Ψ| vs t*")
+st.subheader("Regression: ln|Ψ| vs θ")
 fig, ax = plt.subplots()
 mask1 = ~np.isnan(res1.ln_psi)
 mask2 = ~np.isnan(res2.ln_psi)
 ax.plot(res1.time_star[mask1], res1.ln_psi[mask1], label="EirreEirre")
 ax.plot(res2.time_star[mask2], res2.ln_psi[mask2], "--", label="EquasiEquasi")
 
-# Draw regression lines
-line1 = res1.linreg["slope"] * res1.time_star + res1.linreg["intercept"]
-line2 = res2.linreg["slope"] * res2.time_star + res2.linreg["intercept"]
+# Draw regression lines in selected range
+line1 = res1_reg["slope"] * res1.time_star + res1_reg["intercept"]
+line2 = res2_reg["slope"] * res2.time_star + res2_reg["intercept"]
 ax.plot(res1.time_star, line1, "k:", alpha=0.3)
 ax.plot(res2.time_star, line2, "k--", alpha=0.3)
 
-ax.set_xlabel("t / duration")
+ax.set_xlabel("θ = t / duration")
 ax.set_ylabel("ln(Ψ)")
 ax.legend()
 st.pyplot(fig)
@@ -67,21 +79,21 @@ st.markdown("### Regression summary")
 df = pd.DataFrame([
     {
         "Model": "EirreEirre",
-        "Slope": res1.linreg["slope"],
-        "Intercept": res1.linreg["intercept"],
-        "R": res1.linreg["r"]
+        "Slope": res1_reg["slope"],
+        "Intercept": res1_reg["intercept"],
+        "R": res1_reg["r"]
     },
     {
         "Model": "EquasiEquasi",
-        "Slope": res2.linreg["slope"],
-        "Intercept": res2.linreg["intercept"],
-        "R": res2.linreg["r"]
+        "Slope": res2_reg["slope"],
+        "Intercept": res2_reg["intercept"],
+        "R": res2_reg["r"]
     }
 ])
 st.dataframe(df)
 
 # Downloads
-st.subheader("📥 Download Ψ vs t* data")
+st.subheader("📥 Download Ψ vs θ data")
 
 def download_txt(label, filename, header, data):
     import io
@@ -89,5 +101,5 @@ def download_txt(label, filename, header, data):
     np.savetxt(buf, data, header=header)
     st.download_button(label, buf.getvalue(), file_name=filename, mime="text/plain")
 
-download_txt("Download EirreEirre Ψ", "EirreEirre_Psi.txt", "t*\tPsi", np.column_stack((res1.time_star, res1.psi)))
-download_txt("Download EquasiEquasi Ψ", "EquasiEquasi_Psi.txt", "t*\tPsi", np.column_stack((res2.time_star, res2.psi)))
+download_txt("Download EirreEirre Ψ", "EirreEirre_Psi.txt", "θ	Ψ", np.column_stack((res1.time_star, res1.psi)))
+download_txt("Download EquasiEquasi Ψ", "EquasiEquasi_Psi.txt", "θ	Ψ", np.column_stack((res2.time_star, res2.psi)))
