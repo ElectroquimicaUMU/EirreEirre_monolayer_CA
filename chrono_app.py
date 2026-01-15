@@ -23,7 +23,7 @@ with st.sidebar:
 
 # Run simulations
 res1 = simulate_EirreEirre(E_appl, duration, dt, k01, k02, E02, lambda1 * 38.923074, lambda2 * 38.923074)
-res2 = simulate_EquasiEquasi(E_appl, duration, dt, k01, k02, E02, lambda1 * 38.923074)
+res2 = simulate_EquasiEquasi(E_appl, duration, dt, k01, k02, E02, lambda1 * 38.923074, lambda2 * 38.923074)
 
 # Apply regression in selected theta range
 def custom_regression(t_star, ln_psi, theta_min, theta_max):
