@@ -64,8 +64,8 @@ def simulate_EquasiEquasi(E_appl, duration, dt, k01, k02, E02, lambda1, lambda2)
     MH1_red = quad(lambda x: np.exp(-lambda1/4*(1 + (nu1 + x)/lambda1)**2)/(1 + np.exp(-x)), -50, 50)[0]
     MH2_red = quad(lambda x: np.exp(-lambda2/4*(1 + (nu2 + x)/lambda2)**2)/(1 + np.exp(-x)), -50, 50)[0]
 
-    k1 = k01 * MH1_red / S01
-    k3 = k02 * MH2_red / S02
+    k1 = k01 * duration * MH1_red / S01
+    k3 = k02 * duration * MH2_red / S02
     k2 = k1 * np.exp(nu1)
     k4 = k3 * np.exp(nu2)
 
