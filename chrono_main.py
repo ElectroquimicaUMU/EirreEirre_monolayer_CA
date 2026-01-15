@@ -51,8 +51,7 @@ def simulate_EirreEirre(E_appl, duration, dt, k01, k02, E02, lambda1, lambda2):
 
     return ChronoResult(t, t_star, psi, fO, fR, fI, ln_psi, linreg)
 
-def simulate_EquasiEquasi(E_appl, duration, dt, k01, k02, E02, lambda1):
-    lambda2 = lambda1
+def simulate_EquasiEquasi(E_appl, duration, dt, k01, k02, E02, lambda1, lambda2):
     t = np.linspace(0, duration, int(duration/dt))
     t_star = t / duration
 
