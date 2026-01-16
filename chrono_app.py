@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from chrono_main import simulate_EirreEirre, simulate_EquasiEquasi
 
-dpi = 400
+dpi = 600
 
 st.set_page_config(layout="wide")
 st.title("📉 Chronoamperometry: EirreEirre vs EquasiEquasi")
