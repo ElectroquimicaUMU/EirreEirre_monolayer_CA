@@ -87,9 +87,7 @@ df = pd.DataFrame([
         "Model": "EirreEirre",
         "Slope": res1_reg["slope"],
         "Intercept": res1_reg["intercept"],
-        "R^2": res1_reg["r"]*res1_reg["r"],
-        "k1_red": res1["k1"],
-        "k2_red": res1["k2"]
+        "R^2": res1_reg["r"]*res1_reg["r"]
     },
     {
         "Model": "EquasiEquasi",
