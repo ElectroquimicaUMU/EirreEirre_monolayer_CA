@@ -86,4 +86,4 @@ def simulate_EquasiEquasi(E_appl, duration, dt, k01, k02, E02, lambda1, lambda2)
     slope, intercept, r, _, _ = linregress(t_star[mask], ln_psi[mask])
     linreg = dict(slope=slope, intercept=intercept, r=r)
 
-    return ChronoResult(t, t_star, psi, fO, fR, fI, ln_psi, linreg, k1, k2)
+    return ChronoResult(t, t_star, psi, fO, fR, fI, ln_psi, linreg, k1, k3)
