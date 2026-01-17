@@ -96,8 +96,8 @@ df = pd.DataFrame([
         "R^2": res2_reg["r"]*res2_reg["r"]
     },
     {
-        "k1_red": res1.k1,
-        "k2_red": res1.k2
+        "k1_red": res1["k1"],
+        "k2_red": res1["k2"]
     }
 ])
 st.dataframe(df)
